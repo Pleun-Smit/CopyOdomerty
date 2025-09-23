@@ -1,4 +1,5 @@
 #include "odometry/Odometry.h"
+#include "math/MathUtils.h"
 #include <cmath>  // only for cos/sin
 
 Odometry::Odometry(EncoderSensor* encoder, GyroSensor* gyro)
@@ -15,6 +16,11 @@ void Odometry::update() {
 
     // Update the pose own math
     pose.updatePose(deltaDistance, currentHeading);
+
+    //Normalize heading
+    pose.heading = MathUtils::normalizeAngle(pose.heading);
+
+    printf("Pose: x= %.2f, y= %.2f, heading= %.2f deg \n", pose.position.x, pose.position.y, MathUtils::radToDeg(pose.heading));
 }
 
 Pose Odometry::getPose() const {

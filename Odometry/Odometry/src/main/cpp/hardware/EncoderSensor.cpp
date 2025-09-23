@@ -1,17 +1,17 @@
 #include "hardware/EncoderSensor.h"
+#include <cmath>
 
-int channelA_;
-int channelB_;
-
-EncoderSensor::EncoderSensor(int channelA, int channelB) : channelA(channelA_), channelB(channelB_), encoder(channelA_, channelB_){
-    encoder.Reset(); // reset form WPILib to start counting from 0
+EncoderSensor::EncoderSensor(rev::spark::SparkMax& motor_, double wheelRadiusMeters, double gearRatio_)
+    : encoder(motor_.GetEncoder()), wheelRadius(wheelRadiusMeters), gearRatio(gearRatio_) 
+{
+    encoder.SetPosition(0); // start counting from 0 rotations
 }
 
-double EncoderSensor::getValue() const{
-    // returns distance using WPILib encoder, but you process it self elsewhere
-    return encoder.GetDistance();
+double EncoderSensor::getValue() const {
+    // rotations * 2 * pi * r * gearRatio = distance in meters
+    return encoder.GetPosition() * 2.0 * M_PI * wheelRadius * gearRatio;
 }
 
-void EncoderSensor::reset(){
-    encoder.Reset();
+void EncoderSensor::reset() {
+    encoder.SetPosition(0);
 }

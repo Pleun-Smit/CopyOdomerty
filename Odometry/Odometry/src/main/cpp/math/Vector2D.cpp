@@ -23,3 +23,16 @@ Vector2D Vector2D::operator+(const Vector2D& other) const {
 Vector2D Vector2D::operator*(double scalar) const {
     return Vector2D(x * scalar, y * scalar);
 }
+
+Vector2D& Vector2D::operator+=(const Vector2D& other) {
+        x += other.x;
+        y += other.y;
+        return *this;
+}
+
+Vector2D Vector2D::rotate(double angle) const {
+    double cosA = std::cos(angle);
+    double sinA = std::sin(angle);
+    return Vector2D(x * cosA - y * sinA, x * sinA + y * cosA);
+}
+

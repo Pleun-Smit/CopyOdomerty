@@ -21,4 +21,8 @@ public:
 
     // Operator overload: scalar multiplication
     Vector2D operator*(double scalar) const;
+
+    Vector2D& operator+=(const Vector2D& other);
+
+    Vector2D Vector2D::rotate(double angle) const;
 };

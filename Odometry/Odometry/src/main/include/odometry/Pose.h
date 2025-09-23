@@ -6,9 +6,13 @@ class Pose{
     public:
     Vector2D position;
     double heading; // rad
-    std::vector<Vector2D> history;
+    static const int MAX_HISTORY = 100;
+    Vector2D history[MAX_HISTORY];
+    int historyIndex;
 
     Pose(double x=0, double y=0, double heading_=0);
+
+    double getHeading() const;
 
     void updatePose(double deltaDistance, double deltaHeading);
 

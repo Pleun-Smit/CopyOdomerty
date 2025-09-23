@@ -4,12 +4,21 @@
 
 #pragma once
 
+#include "hardware/EncoderSensor.h"
+#include "hardware/GyroSensor.h"
+#include "odometry/Odometry.h"
+#include "swerve/SwerveDriveKinematics.h"
+#include "swerve/SwerveModule.h"
+#include "odometry/Pose.h"
+
+#include <frc/Joystick.h>
 #include <optional>
 
 #include <frc/TimedRobot.h>
 #include <frc2/command/CommandPtr.h>
 
 #include "RobotContainer.h"
+
 
 class Robot : public frc::TimedRobot {
  public:
@@ -24,11 +33,28 @@ class Robot : public frc::TimedRobot {
   void TestPeriodic() override;
   void SimulationInit() override;
   void SimulationPeriodic() override;
+  void RobotInit() override;
+
 
  private:
   // Have it empty by default so that if testing teleop it
   // doesn't have undefined behavior and potentially crash.
   std::optional<frc2::CommandPtr> m_autonomousCommand;
+  static constexpr int NUM_WHEELS = 4;
 
-  RobotContainer m_container;
+  frc::Joystick joystick{0};
+
+  std::array<SwerveModule*, NUM_WHEELS> modules;
+  SwerveDriveKinematics* kinematics;
+  Pose pose;
+  GyroSensor gyro;
+
+  
+    double lastHeading = 0.0;
+
+    // Speed limits
+    const double maxForwardSpeed = 3.0;   // m/s
+    const double maxSideSpeed = 3.0;      // m/s
+    const double maxAngularSpeed = 6.28;  // rad/s (≈1 rotation/sec)
+
 };

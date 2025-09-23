@@ -1,105 +1,62 @@
-// // Copyright (c) FIRST and other WPILib contributors.
-// // Open Source Software; you can modify and/or share it under the terms of
-// // the WPILib BSD license file in the root directory of this project.
+#include "Robot.h"
+#include <frc/MathUtil.h>  // optional deadband helpers
 
-// #include "Robot.h"
+void Robot::RobotInit() {
+    // Example wheel offsets (distance from center in meters)
+    std::array<Vector2D, NUM_WHEELS> wheelOffsets = {
+        Vector2D(0.3,  0.3),  // front-left
+        Vector2D(0.3, -0.3),  // front-right
+        Vector2D(-0.3, 0.3),  // back-left
+        Vector2D(-0.3, -0.3)  // back-right
+    };
 
-// #include <frc2/command/CommandScheduler.h>
+    // Initialize kinematics
+    kinematics = new SwerveDriveKinematics(wheelOffsets);
 
-// Robot::Robot() {}
+    // Create 4 swerve modules (IDs depend on your wiring)
+    modules[0] = new SwerveModule(1, 2, 0.0508); // front-left
+    modules[1] = new SwerveModule(3, 4, 0.0508); // front-right
+    modules[2] = new SwerveModule(5, 6, 0.0508); // back-left
+    modules[3] = new SwerveModule(7, 8, 0.0508); // back-right
 
-// /**
-//  * This function is called every 20 ms, no matter the mode. Use
-//  * this for items like diagnostics that you want to run during disabled,
-//  * autonomous, teleoperated and test.
-//  *
-//  * <p> This runs after the mode specific periodic functions, but before
-//  * LiveWindow and SmartDashboard integrated updating.
-//  */
-// void Robot::RobotPeriodic() {
-//   frc2::CommandScheduler::GetInstance().Run();
-// }
-
-// /**
-//  * This function is called once each time the robot enters Disabled mode. You
-//  * can use it to reset any subsystem information you want to clear when the
-//  * robot is disabled.
-//  */
-// void Robot::DisabledInit() {}
-
-// void Robot::DisabledPeriodic() {}
-
-// /**
-//  * This autonomous runs the autonomous command selected by your {@link
-//  * RobotContainer} class.
-//  */
-// void Robot::AutonomousInit() {
-//   m_autonomousCommand = m_container.GetAutonomousCommand();
-
-//   if (m_autonomousCommand) {
-//     m_autonomousCommand->Schedule();
-//   }
-// }
-
-// void Robot::AutonomousPeriodic() {}
-
-// void Robot::TeleopInit() {
-//   // This makes sure that the autonomous stops running when
-//   // teleop starts running. If you want the autonomous to
-//   // continue until interrupted by another command, remove
-//   // this line or comment it out.
-//   if (m_autonomousCommand) {
-//     m_autonomousCommand->Cancel();
-//   }
-// }
-
-// /**
-//  * This function is called periodically during operator control.
-//  */
-// void Robot::TeleopPeriodic() {}
-
-// /**
-//  * This function is called periodically during test mode.
-//  */
-// void Robot::TestPeriodic() {}
-
-// /**
-//  * This function is called once when the robot is first started up.
-//  */
-// void Robot::SimulationInit() {}
-
-// /**
-//  * This function is called periodically whilst in simulation.
-//  */
-// void Robot::SimulationPeriodic() {}
-
-// #ifndef RUNNING_FRC_TESTS
-// int main() {
-//   return frc::StartRobot<Robot>();
-// }
-// #endif
-#include "odometry/Pose.h"
-#include <frc/TimedRobot.h>
-#include <iostream>
-
-class Robot : public frc::TimedRobot {
-public:
-    void RobotInit() override {
-        Pose pose(0,0,0);
-        std::cout << "Initial Pose: (" 
-                  << pose.position.x << ", " 
-                  << pose.position.y << ")\n";
-
-        // Simulate movement
-        pose.updatePose(1.0, 0.0); // move forward 1m
-        std::cout << "Updated Pose: (" 
-                  << pose.position.x << ", " 
-                  << pose.position.y << ")\n";
-    }
-};
-
-#ifndef RUNNING_FRC_TESTS
-int main() {
-  return frc::StartRobot<Robot>();
+    // Reset odometry
+    pose.resetPose(0.0, 0.0, 0.0);
+    lastHeading = gyro.getHeading();
 }
-#endif
+
+void Robot::TeleopPeriodic() {
+    // --- 1. Read joystick axes ---
+    double x = frc::ApplyDeadband(joystick.GetX(), 0.05);
+    double y = frc::ApplyDeadband(joystick.GetY(), 0.05);
+    double rot = frc::ApplyDeadband(joystick.GetZ(), 0.05);
+
+    // --- 2. Scale to physical units ---
+    Vector2D velocity(
+        x * maxForwardSpeed,
+        y * maxSideSpeed
+    );
+    double omega = rot * maxAngularSpeed;
+
+    // --- 3. Build chassis state ---
+    ChassisState chassisState(velocity, omega);
+
+    // --- 4. Odometry update ---
+    double heading = gyro.getHeading();
+    double deltaHeading = heading - lastHeading;
+    double avgDistance = 0.0;
+    for (auto& module : modules) {
+        avgDistance += module->getCurrentState().speed * 0.02; // 20ms loop
+    }
+    avgDistance /= NUM_WHEELS;
+    pose.updatePose(avgDistance, deltaHeading);
+    lastHeading = heading;
+
+    // --- 5. Kinematics: chassis → wheel states ---
+    auto wheelStates = kinematics->toWheelStates(chassisState, pose);
+
+    // --- 6. Apply to each swerve module ---
+    for (int i = 0; i < NUM_WHEELS; i++) {
+        modules[i]->setDesiredState(wheelStates[i]);
+    }
+}
+

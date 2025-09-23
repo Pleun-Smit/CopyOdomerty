@@ -1,21 +1,25 @@
 #pragma once
 #include "odometry/Pose.h"
-#include "hardware/EncoderSensor.h"
-#include "hardware/GyroSensor.h"
+#include "hardware/IEncoderSensor.h"
+#include "hardware/IGyroSensor.h"
 
 class Odometry {
     private:
-        EncoderSensor* encoderSensor;
-        GyroSensor* gyroSensor;
         Pose pose;
         double lastDistance;
+        IGyroSensor& gyro;
+        std::vector<IEncoderSensor*> encoders;
+
+        // For tracking previous values
+        std::vector<double> prevEncoderDistances;
+        double prevHeading;
 
     public:
-        Odometry(EncoderSensor* encoder, GyroSensor* gyro);
+        Odometry(IGyroSensor& gyro, const std::vector<IEncoderSensor*>& encoders);
 
         void update();
 
-        Pose getPose() const;
+        const Pose& getPose() const;
 
-        void resetPose(double x = 0, double y = 0, double heading = 0);
+        void reset(double x = 0.0, double y = 0.0, double heading = 0.0);
 };

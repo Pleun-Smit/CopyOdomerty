@@ -1,14 +1,21 @@
 #include "hardware/GyroSensor.h"
 #include <numbers>
 
-GyroSensor::GyroSensor():gyro(){
-    	gyro.Reset(); // standart WPILib gyro
+
+GyroSensor::GyroSensor() : ahrs(studica::AHRS::kMXP_SPI, studica::AHRS::k50Hz)
+{
+    ahrs.Reset();
 }
 
-double GyroSensor::getValue() const{
-    return gyro.GetAngle() * std::numbers::pi / 180.0; //conversion to radians
+double GyroSensor::getValue() {
+    // Convert degrees to radians
+    return ahrs.GetAngle() * std::numbers::pi / 180.0;
 }
 
-void GyroSensor::reset(){
-    gyro.Reset();
+double GyroSensor::getHeading(){
+    return getValue();
+}
+
+void GyroSensor::reset() {
+    ahrs.Reset();
 }
