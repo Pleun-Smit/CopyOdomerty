@@ -23,7 +23,7 @@
 class Robot : public frc::TimedRobot {
  public:
   Robot();
-  ~Robot();
+  ~Robot() override;
   // void RobotPeriodic() override;
   // void DisabledInit() override;
   // void DisabledPeriodic() override;
@@ -37,6 +37,7 @@ class Robot : public frc::TimedRobot {
   
   void TeleopPeriodic() override;
   void RobotInit() override;
+  void DisabledInit() override;
 
 
  private:
@@ -52,12 +53,15 @@ class Robot : public frc::TimedRobot {
   Pose pose;
   GyroSensor gyro;
 
+  Odometry* odometry;
+
   
     double lastHeading = 0.0;
 
     // Speed limits
-    const double maxForwardSpeed = 3.0;   // m/s
-    const double maxSideSpeed = 3.0;      // m/s
+    const double maxForwardSpeed = 0.5;   // m/s
+    const double maxSideSpeed = 0.5;      // m/s
     const double maxAngularSpeed = 6.28;  // rad/s (≈1 rotation/sec)
+    double lastDistances[NUM_WHEELS] = {0};
 
 };

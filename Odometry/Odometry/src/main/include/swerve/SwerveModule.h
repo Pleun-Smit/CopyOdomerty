@@ -14,6 +14,8 @@ public:
     void setDesiredState(const WheelModuleState& state);
     WheelModuleState getCurrentState() const;
     void reset();
+    double getDriveDistance() const;
+    void stop();
 
 private:
     rev::spark::SparkMax driveMotor;

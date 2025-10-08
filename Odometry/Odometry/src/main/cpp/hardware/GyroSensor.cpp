@@ -12,10 +12,15 @@ double GyroSensor::getValue() const {
     return ahrs.GetAngle() * std::numbers::pi / 180.0;
 }
 
-double GyroSensor::getHeading(){
+double GyroSensor::getHeading() const{
     return getValue();
 }
 
 void GyroSensor::reset() {
     ahrs.Reset();
+}
+
+double GyroSensor::getRate() const {
+    // Return rotation rate in radians per second
+    return ahrs.GetRate() * std::numbers::pi / 180.0;
 }

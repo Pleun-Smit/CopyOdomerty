@@ -6,7 +6,7 @@ SwerveModule::SwerveModule(int driveID, int steerID, double wheelRadius_, double
     : driveMotor(driveID, rev::spark::SparkMax::MotorType::kBrushless),
       steerMotor(steerID, rev::spark::SparkMax::MotorType::kBrushless),
       driveEncoder(driveMotor.GetEncoder()),  // reference to concrete encoder
-      steerEncoder(steerMotor, wheelRadius_, gearRatio_),               // if using integrated encoder for steering
+      steerEncoder(steerMotor, wheelRadius_, gearRatio_, true),               // if using integrated encoder for steering
       wheelRadius(wheelRadius_),
       gearRatio(gearRatio_)
 {
@@ -14,16 +14,55 @@ SwerveModule::SwerveModule(int driveID, int steerID, double wheelRadius_, double
     steerEncoder.reset();
 }
 
-void SwerveModule::setDesiredState(const WheelModuleState& state) {
-    // --- Drive motor ---
-    double rpm = (state.speed / (2.0 * PI * wheelRadius)) * 60.0 * gearRatio;
-    driveMotor.Set(rpm);
+// void SwerveModule::setDesiredState(const WheelModuleState& state) {
+//     // --- Drive motor ---
+//     double percentOutput = state.speed / 1.5; // normalize prev 3.0
+//     //double rpm = (state.speed / (2.0 * PI * wheelRadius)) * 60.0 * gearRatio;
+//     driveMotor.Set(std::clamp(percentOutput, -1.0, 1.0));
+//     // If using velocity closed loop:
+//     // double wheelRPS = state.speed / (2.0 * PI * wheelRadius);
+//     // double motorRPM = wheelRPS * 60.0 * gearRatio;
+//     // drivePID.SetReference(motorRPM, rev::CANSparkMax::ControlType::kVelocity);
 
-    // --- Steer motor ---
-    double currentAngle = steerEncoder.getValue(); // in radians
+//     // --- Steer motor ---
+//     double currentAngle = steerEncoder.getValue(); // in radians
+//     double targetAngle = optimizeSteerAngle(currentAngle, state.angle);
+//     double error = MathUtils::normalizeAngle(targetAngle - currentAngle);
+
+//     double kP = 0.5; // might need tuning between 0.1 and 1.0
+//     double output = std::clamp(kP * error, -1.0, 1.0);
+
+//     steerMotor.Set(output); // may need conversion to motor units
+// }
+
+void SwerveModule::setDesiredState(const WheelModuleState& state) {
+    static int loopCount = 0;
+
+    // --- Drive motor (percent output) ---
+    double percentOutput = std::clamp(state.speed / 1.5, -1.0, 1.0);
+    driveMotor.Set(percentOutput);
+    //printf("Wheel %d speed cmd: %.2f\n", driveMotor.GetDeviceId(), percentOutput);
+
+
+    // --- Steer motor (angle control) ---
+    //double currentAngle = steerMotor.GetEncoder().GetPosition() * 2.0 * PI * gearRatio; // convert rotations → radians
+    double currentAngle = steerMotor.GetEncoder().GetPosition() * (2.0 * M_PI / gearRatio);
+
     double targetAngle = optimizeSteerAngle(currentAngle, state.angle);
-    steerMotor.Set(targetAngle); // may need conversion to motor units
+    double error = MathUtils::normalizeAngle(targetAngle - currentAngle);
+
+    double kP = 0.1; // reduce a bit to reduce jitter
+    double output = std::clamp(kP * error, -1.0, 1.0);
+    steerMotor.Set(output);
+
+    // --- Debug print every ~10 cycles (≈200ms) ---
+    if (++loopCount % 10 == 0) {
+        printf("Module[%d] drive=%.2f steerOut=%.2f target=%.2f curr=%.2f err=%.2f\n",
+               driveMotor.GetDeviceId(), percentOutput, output,
+               targetAngle, currentAngle, error);
+    }
 }
+
 
 WheelModuleState SwerveModule::getCurrentState() const {
     WheelModuleState state;
@@ -41,3 +80,13 @@ double SwerveModule::optimizeSteerAngle(double currentAngle, double targetAngle)
     double delta = MathUtils::normalizeAngle(targetAngle - currentAngle);
     return currentAngle + delta;
 }
+
+double SwerveModule::getDriveDistance() const {
+    return driveEncoder.GetPosition() * (2.0 * PI * wheelRadius / gearRatio);
+}
+
+void SwerveModule::stop(){
+    driveMotor.Set(0);
+    steerMotor.Set(0);
+}
+

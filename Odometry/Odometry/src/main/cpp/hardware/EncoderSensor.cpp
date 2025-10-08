@@ -1,8 +1,8 @@
 #include "hardware/EncoderSensor.h"
 #include <cmath>
 
-EncoderSensor::EncoderSensor(rev::spark::SparkMax& motor_, double wheelRadiusMeters, double gearRatio_)
-    : encoder(motor_.GetEncoder()), wheelRadius(wheelRadiusMeters), gearRatio(gearRatio_) 
+EncoderSensor::EncoderSensor(rev::spark::SparkMax& motor_, double wheelRadiusMeters, double gearRatio_, bool isSteering)
+    : encoder(motor_.GetEncoder()), wheelRadius(wheelRadiusMeters), gearRatio(gearRatio_), steeringMode(isSteering) 
 {
     encoder.SetPosition(0); // start counting from 0 rotations
 }

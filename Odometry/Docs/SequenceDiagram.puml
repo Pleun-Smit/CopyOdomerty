@@ -1,0 +1,30 @@
+@startuml
+
+title "Pose - Sequence Diagram"
+
+participant Robot
+participant Odometry
+participant SwerveModule
+participant IEncoderSensor
+participant IGyroSensor
+
+Robot --> Odometry : update()
+
+loop for each SwerveModule
+  Odometry --> SwerveModule : getWheelDistance()
+  SwerveModule --> IEncoderSensor : getDistance()
+  IEncoderSensor -->> SwerveModule : distance
+  SwerveModule -->> Odometry : wheel distance
+  
+end
+
+Odometry --> IGyroSensor : getHeading()
+IGyroSensor -->> Odometry : heading
+Odometry --> Odometry : calculate new Pose
+note over Odometry
+  Computes x, y, heading from wheel distances and gyro
+end note
+
+Odometry -->> Robot : Pose
+
+@enduml
