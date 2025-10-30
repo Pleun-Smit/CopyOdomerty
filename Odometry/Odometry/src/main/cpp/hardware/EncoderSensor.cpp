@@ -8,8 +8,14 @@ EncoderSensor::EncoderSensor(rev::spark::SparkMax& motor_, double wheelRadiusMet
 }
 
 double EncoderSensor::getValue() const {
-    // rotations * 2 * pi * r * gearRatio = distance in meters
-    return encoder.GetPosition() * 2.0 * PI * wheelRadius * gearRatio;
+    if (steeringMode) {
+        // encoder returns motor rotations -> convert to wheel radians
+        // motor rotations * 2π = motor radians; divide by gear ratio to get wheel radians
+        return encoder.GetPosition() * 2.0 * PI / gearRatio;
+    } else {
+        // drive encoder: rotations -> meters
+        return encoder.GetPosition() * 2.0 * PI * wheelRadius / gearRatio;
+    }
 }
 
 void EncoderSensor::reset() {

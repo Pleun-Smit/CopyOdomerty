@@ -1,32 +1,40 @@
 #pragma once
 #include "WheelModuleState.h"
-#include "hardware/EncoderSensor.h"
+#include "Math/Vector2D.h"
 #include "Math/MathUtils.h"
 
 #include <rev/SparkMax.h>
 #include <rev/RelativeEncoder.h>
+#include <rev/AbsoluteEncoder.h>
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
 
 class SwerveModule {
 public:
     static constexpr double PI = 3.14159265358979323846;
-    SwerveModule(int driveID, int steerID, double wheelRadius, double gearRatio = 1.0, double steerOffset = 0.00);
+    static constexpr double MAX_SPEED = 3.0; // m/s
+
+    SwerveModule(int driveID, int steerID, Vector2D wheelOffset, double wheelRadius, double gearRatio = 1.0, double steerOffset = 0.0);
 
     void setDesiredState(const WheelModuleState& state);
     WheelModuleState getCurrentState() const;
-    void reset();
+    void reset(); // resets drive encoder only
     double getDriveDistance() const;
+    double getSteerAngle() const;
     void stop();
 
 private:
     rev::spark::SparkMax driveMotor;
     rev::spark::SparkMax steerMotor;
 
-    rev::RelativeEncoder& driveEncoder;  // store as reference
-    EncoderSensor steerEncoder;          // optional: for precise steering
+    rev::RelativeEncoder& driveEncoder;
+    rev::AbsoluteEncoder& steerEncoder;
 
-    double wheelRadius;  // meters
-    double gearRatio;    // motor to wheel reduction
+    Vector2D wheelOffset;
+    double wheelRadius;
+    double gearRatio;
     double steerOffset;
-    // Helper for angle optimization
+
     double optimizeSteerAngle(double currentAngle, double targetAngle) const;
 };
