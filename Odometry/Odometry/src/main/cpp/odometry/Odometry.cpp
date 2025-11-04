@@ -14,8 +14,13 @@ Odometry::Odometry(std::array<SwerveModule*, 4> modules_, IGyroSensor* gyro_)
 }
 
 void Odometry::update() {
-    // --- 1. Read gyro ---
+    // --- 1. Read gyro --- (absolute heading in rad)
     double currentHeading = gyro->getHeading();
+
+    // Compute change in heading (wrapped) and midpoint heading
+    double deltaHeading = MathUtils::normalizeAngle(currentHeading - lastHeading);
+    double midHeading = lastHeading + deltaHeading * 0.5;
+
 
     // --- 2. Compute robot-relative delta pos ---
     Vector2D robotDelta(0.0, 0.0);
@@ -38,43 +43,24 @@ void Odometry::update() {
     robotDelta.y /= 4.0;
 
     // --- 3. Convert from robot frame to field frame ---
-    double heading = currentHeading; // radians
+    double cosT = std::cos(midHeading);
+    double sinT = std::sin(midHeading);
     Vector2D fieldDelta(
-        robotDelta.x * cos(heading) - robotDelta.y * sin(heading),
-        robotDelta.x * sin(heading) + robotDelta.y * cos(heading)
+        robotDelta.x * cosT - robotDelta.y * sinT,
+        robotDelta.x * sinT + robotDelta.y * cosT
     );
 
     // --- 4. Integrate into pose ---
     pose.position.x += fieldDelta.x;
     pose.position.y += fieldDelta.y;
-    pose.heading = heading;
+    pose.heading = currentHeading;
+
+    lastHeading = currentHeading;
 
     // --- 5. Debug output ---
     printf("Pose: x=%.2f, y=%.2f, heading=%.2f deg\n",
            pose.position.x, pose.position.y,
-           MathUtils::radToDeg(heading));
-           
-    // // --- 2. Compute average delta distance from all 4 wheels ---
-    // double avgDelta = 0.0;
-    // for (int i = 0; i < 4; i++) {
-    //     double dist = modules[i]->getDriveDistance();
-    //     double delta = dist - lastDistances[i];
-    //     avgDelta += delta;
-    //     lastDistances[i] = dist;
-    // }
-    // avgDelta /= 4.0;
-
-    // // --- 3. Compute change in heading ---
-    // double deltaHeading = currentHeading - lastHeading;
-    // lastHeading = currentHeading;
-
-    // // --- 4. Update pose (simple integration) ---
-    // pose.updatePose(avgDelta, deltaHeading);
-
-    // // --- 5. Debug print ---
-    // printf("Pose: x=%.2f, y=%.2f, heading=%.2f deg\n",
-    //        pose.position.x, pose.position.y,
-    //        MathUtils::radToDeg(pose.getHeading()));
+           MathUtils::radToDeg(pose.heading));
 
 }
 

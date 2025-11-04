@@ -1,0 +1,14 @@
+@startuml
+component "Robot Control" as Robot
+component "Odometry Subsystem" as Odometry
+component "Kinematics Subsystem" as Kinematics
+component "Navigation Subsystem" as Navigation
+component "Hardware Layer" as Hardware
+
+Robot --> Odometry : uses
+Robot --> Kinematics : uses
+Robot --> Navigation : uses
+Odometry --> Hardware : reads sensors
+Kinematics --> Hardware : controls motors
+Navigation --> Kinematics : sends motion commands
+@enduml

@@ -17,12 +17,25 @@ SwerveModule::SwerveModule(int driveID, int steerID, Vector2D wheelOffset_, doub
 void SwerveModule::setDesiredState(const WheelModuleState& state) {
     static int loopCount = 0;
 
-    // Drive motor percent output
+    // copilot fix hopelijk
+    double currentAngle = MathUtils::normalizeAngle(steerEncoder.GetPosition() - steerOffset);
+
+    // Compute raw delta from requested angle to current angle (signed, [-PI,PI])
+    double rawDelta = MathUtils::normalizeAngle(state.angle - currentAngle);
+
+    // Drive motor percent output (before possible inversion)
     double percentOutput = std::clamp(state.speed / MAX_SPEED, -1.0, 1.0);
+
+    // If rawDelta would require rotating more than 90 degrees, we prefer to flip wheel
+    // direction and rotate the steering by ~180 degrees. In that case invert drive sign.
+    bool shouldInvertDrive = std::fabs(rawDelta) > (PI / 2.0);
+    if (shouldInvertDrive) {
+        percentOutput = -percentOutput;
+    }
+
     driveMotor.Set(percentOutput);
 
     // Steering motor control using absolute encoder
-    double currentAngle = MathUtils::normalizeAngle(steerEncoder.GetPosition() - steerOffset);
     double targetAngle = optimizeSteerAngle(currentAngle, state.angle);
     double error = MathUtils::normalizeAngle(targetAngle - currentAngle);
 
@@ -31,10 +44,12 @@ void SwerveModule::setDesiredState(const WheelModuleState& state) {
     steerMotor.Set(output);
 
     if (++loopCount % 10 == 0) {
-        printf("Module[%d] drive=%.3f steerOut=%.3f target=%.3f curr=%.3f err=%.3f\n",
+        printf("Module[%d] drive=%.3f steerOut=%.3f target=%.3f curr=%.3f rawDelta=%.3f invert=%d\n",
                driveMotor.GetDeviceId(), percentOutput, output,
-               targetAngle, currentAngle, error);
+               targetAngle, currentAngle, rawDelta, shouldInvertDrive ? 1 : 0);
     }
+
+    // copilot fix hopelijk
 }
 
 WheelModuleState SwerveModule::getCurrentState() const {
