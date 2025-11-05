@@ -2,10 +2,10 @@
 #include <rev/SparkMax.h>
 #include <rev/RelativeEncoder.h>
 #include "IEncoderSensor.h"
+#include "Constants.h"
 
 class EncoderSensor : public IEncoderSensor {
 public:
-    static constexpr double PI = 3.14159265358979323846;
     // Constructor: motor object, wheel radius (m), optional gear ratio
     EncoderSensor(rev::spark::SparkMax& motor_, double wheelRadiusMeters, double gearRatio_ = 1.0, bool isSteering = false);
 

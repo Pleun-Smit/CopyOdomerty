@@ -1,24 +1,46 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 #pragma once
-
-/**
- * The Constants header provides a convenient place for teams to hold robot-wide
- * numerical or boolean constants.  This should not be used for any other
- * purpose.
- *
- * It is generally a good idea to place constants into subsystem- or
- * command-specific namespaces within this header, which can then be used where
- * they are needed.
+// -----------------------------------------------------------------------------
+// Odometry project
+// -----------------------------------------------------------------------------
+/*
+ * constants.h
+ * CopyOdometry - constants grouped by purpose
+ * Author: Pleun-Smit
  */
 
 namespace OperatorConstants {
+// *** BUILD / FEATURES ***
+
+// *** UNITS & CONVERSIONS ***
+
+// *** CONSTANTS ***
+static constexpr double PI = 3.14159265358979323846;
+
+// *** ROBOT GEOMETRY (METERS) ***
+double wheelRadius = ;
+double gearRatio = ;
+const std::size_t numberOfModules = 4; 
+
+// *** WHEEL / DRIVE PARAMETERS ***
+
+// *** ENCODER / SENSOR SPECS ***
+
+// *** IMU ***
+
+// *** ODOMETRY ***
+
+// *** KINEMATICS ***
+
+// *** CONTROL GAINS ***
+
+// *** MOTION LIMITS ***
+
+// *** ***
+
 
 inline constexpr int kDriverControllerPort = 0;
 
-    constexpr double PI = 3.14159265358979323846;
+    
 
     constexpr double TRACK_WIDTH = 0.515;
     constexpr double WHEEL_BASE  = 0.515;

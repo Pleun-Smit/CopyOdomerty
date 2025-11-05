@@ -11,10 +11,10 @@ double EncoderSensor::getValue() const {
     if (steeringMode) {
         // encoder returns motor rotations -> convert to wheel radians
         // motor rotations * 2π = motor radians; divide by gear ratio to get wheel radians
-        return encoder.GetPosition() * 2.0 * PI / gearRatio;
+        return encoder.GetPosition() * 2.0 * OperatorConstants::PI / gearRatio;
     } else {
         // drive encoder: rotations -> meters
-        return encoder.GetPosition() * 2.0 * PI * wheelRadius / gearRatio;
+        return encoder.GetPosition() * 2.0 * OperatorConstants::PI * wheelRadius / gearRatio;
     }
 }
 

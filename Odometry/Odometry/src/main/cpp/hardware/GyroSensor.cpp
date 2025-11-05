@@ -11,12 +11,12 @@ double GyroSensor::getValue() const {
     // Convert degrees to radians
     //return ahrs.GetAngle() * std::numbers::pi / 180.0;
     // Convert to radians and normalize to [-π, π]
-    double angleRad = ahrs.GetAngle() * std::numbers::pi / 180.0;
-    angleRad = std::fmod(angleRad, 2.0 * std::numbers::pi);
-    if (angleRad > std::numbers::pi)
-        angleRad -= 2.0 * std::numbers::pi;
-    else if (angleRad < -std::numbers::pi)
-        angleRad += 2.0 * std::numbers::pi;
+    double angleRad = ahrs.GetAngle() * OperatorConstants::PI / 180.0;
+    angleRad = std::fmod(angleRad, 2.0 * OperatorConstants::PI);
+    if (angleRad > OperatorConstants::PI)
+        angleRad -= 2.0 * OperatorConstants::PI;
+    else if (angleRad < -OperatorConstants::PI)
+        angleRad += 2.0 * OperatorConstants::PI;
     return angleRad;
 }
 
@@ -30,5 +30,5 @@ void GyroSensor::reset() {
 
 double GyroSensor::getRate() const {
     // Return rotation rate in radians per second
-    return ahrs.GetRate() * std::numbers::pi / 180.0;
+    return ahrs.GetRate() * OperatorConstants::PI / 180.0;
 }

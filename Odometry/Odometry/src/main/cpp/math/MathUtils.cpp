@@ -4,15 +4,15 @@
 #include <cmath>
 
 double MathUtils::radToDeg(double radians){
-    return radians * 180.0 / PI;
+    return radians * 180.0 / OperatorConstants::PI;
 }
 
 double MathUtils::degToRad(double degrees){
-    return degrees * PI / 180.0;
+    return degrees * OperatorConstants::PI / 180.0;
 }
 
 double MathUtils::normalizeAngle(double radians){
-    while (radians > PI) radians -= 2 * PI;
-    while (radians <= -PI) radians += 2 * PI;
+    while (radians > OperatorConstants::PI) radians -= 2 * OperatorConstants::PI;
+    while (radians <= -OperatorConstants::PI) radians += 2 * OperatorConstants::PI;
     return radians;
 }
