@@ -1,5 +1,5 @@
 #pragma once
-#include "hardware/IGyroSensor.h"
+#include "hardware/Interfaces/IGyroSensor.h"
 #include "Constants.h"
 #include <studica/AHRS.h>
 #include <frc/SPI.h>

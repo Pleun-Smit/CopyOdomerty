@@ -18,6 +18,8 @@
 #include <frc/TimedRobot.h>
 #include <frc2/command/CommandPtr.h>
 
+#include <memory>
+
 #include "RobotContainer.h"
 
 
@@ -47,12 +49,12 @@ class Robot : public frc::TimedRobot {
   std::optional<frc2::CommandPtr> m_autonomousCommand;
   frc::Joystick joystick{0};
 
-  std::array<SwerveModule*, SwerveConstants::NUM_WHEELS> modules;
-  SwerveDriveKinematics* kinematics;
+  std::array<std::unique_ptr<SwerveModule>, SwerveConstants::NUM_WHEELS> modules;
+  std::unique_ptr<SwerveDriveKinematics> kinematics;
   Pose pose;
   GyroSensor gyro;
 
-  Odometry* odometry;
+  std::unique_ptr<Odometry> odometry;
 
   
     double lastHeading = 0.0;

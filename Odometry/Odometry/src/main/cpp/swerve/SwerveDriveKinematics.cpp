@@ -20,7 +20,7 @@ SwerveDriveKinematics::toWheelStates(const ChassisState& chassisState, const Pos
     printf("Chassis: vel=(%.2f, %.2f) omega=%.2f rad/s\n",
        chassisState.velocity.x, chassisState.velocity.y, chassisState.omega);
 
-    for (int i = 0; i < SwerveConstants::NUM_WHEELS; ++i) {
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; ++i) {
         Vector2D v_rot(
             -chassisState.omega * wheelOffsets[i].y,
              chassisState.omega * wheelOffsets[i].x
@@ -30,7 +30,7 @@ SwerveDriveKinematics::toWheelStates(const ChassisState& chassisState, const Pos
 
         states[i].speed = v_total.magnitude();
         states[i].angle = MathUtils::normalizeAngle(std::atan2(v_total.y, v_total.x));
-        printf("Wheel %d: v_rot=(%.2f, %.2f) v_total=(%.2f, %.2f)\n",
+        printf("Wheel %zu: v_rot=(%.2f, %.2f) v_total=(%.2f, %.2f)\n",
             i, v_rot.x, v_rot.y, v_total.x, v_total.y);
     }
 
@@ -44,7 +44,7 @@ ChassisState SwerveDriveKinematics::toChassisState(
     Vector2D avgVelocity(0,0);
     double avgOmega = 0.0;
 
-    for (int i = 0; i < SwerveConstants::NUM_WHEELS; ++i) {
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; ++i) {
         Vector2D v(
             std::cos(wheelStates[i].angle) * wheelStates[i].speed,
             std::sin(wheelStates[i].angle) * wheelStates[i].speed
@@ -66,7 +66,7 @@ void SwerveDriveKinematics::normalizeWheelSpeeds(
     std::array<WheelModuleState, SwerveConstants::NUM_WHEELS>& states, double maxSpeed
 ) {
     double higherSpeed = 0.0;
-    for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         if (states[i].speed > higherSpeed) {
             higherSpeed = states[i].speed;
         }
@@ -74,7 +74,7 @@ void SwerveDriveKinematics::normalizeWheelSpeeds(
 
     if (higherSpeed > maxSpeed) {
         double scaleFactor = maxSpeed / higherSpeed;
-        for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
+        for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
             states[i].speed *= scaleFactor;
         }
     }

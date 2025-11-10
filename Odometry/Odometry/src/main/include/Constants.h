@@ -52,10 +52,10 @@ inline constexpr double DRIVE_GEAR_RATIO = 5.50;   // motor->wheel gear ratio
 inline constexpr double kP_STEER = 0.25; // proportional gain for steering
 
 // Steering offsets (radians) - keep if needed for absolute encoders
-inline constexpr double FRONT_LEFT_OFFSET  = PI;
-inline constexpr double FRONT_RIGHT_OFFSET = 0.0;
-inline constexpr double BACK_LEFT_OFFSET   = PI;
-inline constexpr double BACK_RIGHT_OFFSET  = 0.0;
+// inline constexpr double FRONT_LEFT_OFFSET  = PI;
+// inline constexpr double FRONT_RIGHT_OFFSET = 0.0;
+// inline constexpr double BACK_LEFT_OFFSET   = PI;
+// inline constexpr double BACK_RIGHT_OFFSET  = 0.0;
 
 inline constexpr double MAX_WHEEL_SPEED_MPS = 3.0;
 
@@ -64,5 +64,5 @@ inline constexpr double MAX_WHEEL_SPEED_MPS = 3.0;
 
 namespace PIDGains{
     // steer gains
-    double STEER_kP = 0.25;
+    inline constexpr double STEER_kP = 0.25;
 }

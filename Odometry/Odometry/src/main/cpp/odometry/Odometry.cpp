@@ -3,11 +3,11 @@
 #include <cmath>
 #include <cstdio>
 
-Odometry::Odometry(std::array<SwerveModule*, SwerveConstants::NUMBER_OF_MODULES> modules_, IGyroSensor* gyro_)
-    : modules(modules_), gyro(gyro_), pose() 
+Odometry::Odometry(std::array<std::unique_ptr<SwerveModule>, SwerveConstants::NUMBER_OF_MODULES> modules_, std::unique_ptr<IGyroSensor> gyro_)
+    : modules(std::move(modules_)), gyro(std::move(gyro_)), pose() 
 {
     // Record initial distances
-    for (int i = 0; i < SwerveConstants::NUMBER_OF_MODULES; i++) {
+    for (size_t i = 0; i < SwerveConstants::NUMBER_OF_MODULES; i++) {
         lastDistances[i] = modules[i]->getDriveDistance();
     }
     lastHeading = gyro->getHeading();
@@ -25,7 +25,7 @@ void Odometry::update() {
     // --- 2. Compute robot-relative delta pos ---
     Vector2D robotDelta(0.0, 0.0);
     
-    for (int i = 0; i < SwerveConstants::NUMBER_OF_MODULES; i++) {
+    for (size_t i = 0; i < SwerveConstants::NUMBER_OF_MODULES; i++) {
         double dist = modules[i]->getDriveDistance();
         double delta = dist - lastDistances[i];
         lastDistances[i] = dist;
@@ -70,7 +70,7 @@ Pose Odometry::getPose() const {
 
 void Odometry::resetPose(double x, double y, double heading) {
     pose.resetPose(x, y, heading);
-    for(int i =0; i<SwerveConstants::NUMBER_OF_MODULES; i++){
+    for(size_t i =0; i<SwerveConstants::NUMBER_OF_MODULES; i++){
         lastDistances[i] = modules[i]->getDriveDistance();
     }
     lastHeading  = gyro->getHeading();

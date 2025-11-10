@@ -9,13 +9,7 @@ Robot::Robot()
     // Nothing else here; RobotInit() does the real setup
 }
 
-Robot::~Robot() {
-    for (auto& module : modules) {
-        delete module;
-    }
-    delete kinematics;
-    delete odometry;
-}
+Robot::~Robot() {}
 
 void Robot::RobotInit() {
     // Define wheel offsets first
@@ -28,30 +22,31 @@ void Robot::RobotInit() {
 
     // Create swerve modules
     modules = {
-        new SwerveModule(10, 11, wheelOffsets[0], 0.0375, 5.50, 0.0),
-        new SwerveModule(16, 17, wheelOffsets[1], 0.0375, 5.50, 0.0),
-        new SwerveModule(12, 13, wheelOffsets[2], 0.0375, 5.50, 0.0),
-        new SwerveModule(14, 15, wheelOffsets[3], 0.0375, 5.50, 0.0)
+        std::make_unique<SwerveModule>(10, 11, wheelOffsets[0], 0.0375, 5.50, 0.0),
+        std::make_unique<SwerveModule>(16, 17, wheelOffsets[1], 0.0375, 5.50, 0.0),
+        std::make_unique<SwerveModule>(12, 13, wheelOffsets[2], 0.0375, 5.50, 0.0),
+        std::make_unique<SwerveModule>(14, 15, wheelOffsets[3], 0.0375, 5.50, 0.0)
     };
 
     // Initialize kinematics
-    kinematics = new SwerveDriveKinematics(wheelOffsets);
+    kinematics = std::make_unique<SwerveDriveKinematics>(wheelOffsets);
     kinematics->toggleFieldRelativeControl(false);
 
     // Initialize odometry
-    odometry = new Odometry(modules, &gyro);
+    //odometry = std::make_unique<Odometry>(modules, &gyro);
+    odometry = std::make_unique<Odometry>(std::move(modules), std::make_unique<GyroSensor>());
     odometry->resetPose(0,0,0);
 
     // Reset drive encoders only
-    for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         modules[i]->reset();
     }
 
     gyro.reset();
 
     // Print initial absolute angles
-    for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
-        printf("Wheel %d initial absolute angle=%.3f rad\n", i, modules[i]->getSteerAngle());
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
+        printf("Wheel %zu initial absolute angle=%.3f rad\n", i, modules[i]->getSteerAngle());
     }
 
     printf("RobotInit complete.\n");
@@ -81,7 +76,7 @@ void Robot::TeleopPeriodic() {
     auto wheelStates = kinematics->toWheelStates(chassisState, odometry->getPose());
 
     // --- 5. Apply wheel states to modules using absolute steering encoder ---
-    for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         modules[i]->setDesiredState(wheelStates[i]);
     }
 
@@ -95,9 +90,9 @@ void Robot::TeleopPeriodic() {
            currentPose.position.y,
            currentPose.heading * 180.0 / OperatorConstants::PI);
 
-    for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         auto ws = modules[i]->getCurrentState();
-        printf("Wheel %d: speed=%.2f m/s, angle=%.3f rad (%.1f°), driveDist=%.2f m\n",
+        printf("Wheel %zu: speed=%.2f m/s, angle=%.3f rad (%.1f°), driveDist=%.2f m\n",
                i, ws.speed, ws.angle, ws.angle * 180.0 / OperatorConstants::PI,
                modules[i]->getDriveDistance());
     }
@@ -108,7 +103,7 @@ void Robot::TeleopPeriodic() {
 }
 
 void Robot::DisabledInit(){
-    for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         modules[i]->stop();  // call stop() on each module
     }
     printf("Robot disabled: all motors stopped.\n");
