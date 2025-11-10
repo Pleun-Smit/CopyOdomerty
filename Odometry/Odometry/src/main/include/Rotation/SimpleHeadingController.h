@@ -36,7 +36,7 @@ public:
         // If forcedOmega active (explicit angular velocity command), return it (but clamp)
         if (forcedOmegaActive) {
             double out = std::clamp(forcedOmega, -maxOmega, maxOmega);
-            // clear forced once requested (optional behavior); leave active until cleared externally
+            // clear forced once requested (optional behavior) leave active until cleared externally
             return out;
         }
 

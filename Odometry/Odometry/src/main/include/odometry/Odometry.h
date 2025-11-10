@@ -4,19 +4,18 @@
 #include "odometry/Pose.h"
 #include "Constants.h"
 #include <array>
-using namespace OperatorConstants;
 
 class Odometry {
 public:
-    Odometry(std::array<SwerveModule*, numberOfModules> modules_, IGyroSensor* gyro_);
+    Odometry(std::array<SwerveModule*, SwerveConstants::NUMBER_OF_MODULES> modules_, IGyroSensor* gyro_);
     void update();
     Pose getPose() const;
     void resetPose(double x, double y, double heading);
 
 private:
-    std::array<SwerveModule*, numberOfModules> modules;
+    std::array<SwerveModule*, SwerveConstants::NUMBER_OF_MODULES> modules;
     IGyroSensor* gyro;
     Pose pose;
-    double lastDistances[numberOfModules];
+    double lastDistances[SwerveConstants::NUMBER_OF_MODULES];
     double lastHeading;
 };

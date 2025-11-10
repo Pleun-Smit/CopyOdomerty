@@ -3,11 +3,11 @@
 #include <cmath>
 #include <cstdio>
 
-Odometry::Odometry(std::array<SwerveModule*, numberOfModules> modules_, IGyroSensor* gyro_)
+Odometry::Odometry(std::array<SwerveModule*, SwerveConstants::NUMBER_OF_MODULES> modules_, IGyroSensor* gyro_)
     : modules(modules_), gyro(gyro_), pose() 
 {
     // Record initial distances
-    for (int i = 0; i < numberOfModules; i++) {
+    for (int i = 0; i < SwerveConstants::NUMBER_OF_MODULES; i++) {
         lastDistances[i] = modules[i]->getDriveDistance();
     }
     lastHeading = gyro->getHeading();
@@ -25,7 +25,7 @@ void Odometry::update() {
     // --- 2. Compute robot-relative delta pos ---
     Vector2D robotDelta(0.0, 0.0);
     
-    for (int i = 0; i < numberOfModules; i++) {
+    for (int i = 0; i < SwerveConstants::NUMBER_OF_MODULES; i++) {
         double dist = modules[i]->getDriveDistance();
         double delta = dist - lastDistances[i];
         lastDistances[i] = dist;
@@ -39,8 +39,8 @@ void Odometry::update() {
     }
 
     // Average across modules
-    robotDelta.x /= static_cast<double>(numberOfModules);
-    robotDelta.y /= static_cast<double>(numberOfModules);
+    robotDelta.x /= static_cast<double>(SwerveConstants::NUMBER_OF_MODULES);
+    robotDelta.y /= static_cast<double>(SwerveConstants::NUMBER_OF_MODULES);
 
     // --- 3. Convert from robot frame to field frame ---
     double cosT = std::cos(midHeading);
@@ -70,7 +70,7 @@ Pose Odometry::getPose() const {
 
 void Odometry::resetPose(double x, double y, double heading) {
     pose.resetPose(x, y, heading);
-    for(int i =0; i<4; i++){
+    for(int i =0; i<SwerveConstants::NUMBER_OF_MODULES; i++){
         lastDistances[i] = modules[i]->getDriveDistance();
     }
     lastHeading  = gyro->getHeading();

@@ -17,18 +17,17 @@ SwerveModule::SwerveModule(int driveID, int steerID, Vector2D wheelOffset_, doub
 void SwerveModule::setDesiredState(const WheelModuleState& state) {
     static int loopCount = 0;
 
-    // copilot fix hopelijk
     double currentAngle = MathUtils::normalizeAngle(steerEncoder.GetPosition() - steerOffset);
 
     // Compute raw delta from requested angle to current angle (signed, [-PI,PI])
     double rawDelta = MathUtils::normalizeAngle(state.angle - currentAngle);
 
     // Drive motor percent output (before possible inversion)
-    double percentOutput = std::clamp(state.speed / MAX_SPEED, -1.0, 1.0);
+    double percentOutput = std::clamp(state.speed / SwerveConstants::MAX_WHEEL_SPEED_MPS, -1.0, 1.0);
 
     // If rawDelta would require rotating more than 90 degrees, we prefer to flip wheel
-    // direction and rotate the steering by ~180 degrees. In that case invert drive sign.
-    bool shouldInvertDrive = std::fabs(rawDelta) > (PI / 2.0);
+    // direction and rotate the steering by 180 degrees. In that case invert drive sign
+    bool shouldInvertDrive = std::fabs(rawDelta) > (OperatorConstants::PI / 2.0);
     if (shouldInvertDrive) {
         percentOutput = -percentOutput;
     }
@@ -45,8 +44,7 @@ void SwerveModule::setDesiredState(const WheelModuleState& state) {
     double targetAngle = optimizeSteerAngle(currentAngle, state.angle);
     double error = MathUtils::normalizeAngle(targetAngle - currentAngle);
 
-    double kP = 0.25;
-    double output = std::clamp(kP * error, -1.0, 1.0);
+    double output = std::clamp(PIDGains::STEER_kP* error, -1.0, 1.0);
     steerMotor.Set(output);
 
     if (++loopCount % 10 == 0) {
@@ -54,13 +52,11 @@ void SwerveModule::setDesiredState(const WheelModuleState& state) {
                driveMotor.GetDeviceId(), percentOutput, output,
                targetAngle, currentAngle, rawDelta, shouldInvertDrive ? 1 : 0);
     }
-
-    // copilot fix hopelijk
 }
 
 WheelModuleState SwerveModule::getCurrentState() const {
     WheelModuleState state;
-    state.speed = (driveEncoder.GetVelocity() / 60.0) * 2.0 * PI * wheelRadius / gearRatio;
+    state.speed = (driveEncoder.GetVelocity() / 60.0) * 2.0 * OperatorConstants::PI * wheelRadius / gearRatio;
     state.angle = MathUtils::normalizeAngle(steerEncoder.GetPosition() - steerOffset);
     return state;
 }
@@ -71,7 +67,7 @@ void SwerveModule::reset() {
 }
 
 double SwerveModule::getDriveDistance() const {
-    return driveEncoder.GetPosition() * 2.0 * PI * wheelRadius / gearRatio;
+    return driveEncoder.GetPosition() * 2.0 * OperatorConstants::PI * wheelRadius / gearRatio;
 }
 
 double SwerveModule::getSteerAngle() const {
@@ -86,8 +82,8 @@ void SwerveModule::stop() {
 double SwerveModule::optimizeSteerAngle(double currentAngle, double targetAngle) const {
     double delta = MathUtils::normalizeAngle(targetAngle - currentAngle);
 
-    if (delta > PI/2) delta -= PI;
-    if (delta < -PI/2) delta += PI;
+    if (delta > OperatorConstants::PI/2) delta -= OperatorConstants::PI;
+    if (delta < -OperatorConstants::PI/2) delta += OperatorConstants::PI;
 
     return MathUtils::normalizeAngle(currentAngle + delta);
 }

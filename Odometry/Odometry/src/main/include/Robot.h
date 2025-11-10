@@ -10,6 +10,7 @@
 #include "swerve/SwerveDriveKinematics.h"
 #include "swerve/SwerveModule.h"
 #include "odometry/Pose.h"
+#include "Constants.h"
 
 #include <frc/Joystick.h>
 #include <optional>
@@ -44,11 +45,9 @@ class Robot : public frc::TimedRobot {
   // Have it empty by default so that if testing teleop it
   // doesn't have undefined behavior and potentially crash.
   std::optional<frc2::CommandPtr> m_autonomousCommand;
-  static constexpr int NUM_WHEELS = 4;
-  static constexpr double PI = 3.14159265358979323846;
   frc::Joystick joystick{0};
 
-  std::array<SwerveModule*, NUM_WHEELS> modules;
+  std::array<SwerveModule*, SwerveConstants::NUM_WHEELS> modules;
   SwerveDriveKinematics* kinematics;
   Pose pose;
   GyroSensor gyro;
@@ -59,9 +58,7 @@ class Robot : public frc::TimedRobot {
     double lastHeading = 0.0;
 
     // Speed limits
-    const double maxForwardSpeed = 0.5;   // m/s
-    const double maxSideSpeed = 0.5;      // m/s
-    const double maxAngularSpeed = 6.28;  // rad/s (≈1 rotation/sec)
-    double lastDistances[NUM_WHEELS] = {0};
+
+    double lastDistances[SwerveConstants::NUM_WHEELS] = {0};
 
 };

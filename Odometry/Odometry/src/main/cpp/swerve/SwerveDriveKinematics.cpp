@@ -4,12 +4,12 @@
 #include <stdio.h>
 
 SwerveDriveKinematics::SwerveDriveKinematics(
-    const std::array<Vector2D, NUM_WHEELS>& offsets
+    const std::array<Vector2D, SwerveConstants::NUM_WHEELS>& offsets
 ) : wheelOffsets(offsets) {}
 
-std::array<WheelModuleState, SwerveDriveKinematics::NUM_WHEELS>
+std::array<WheelModuleState, SwerveConstants::NUM_WHEELS>
 SwerveDriveKinematics::toWheelStates(const ChassisState& chassisState, const Pose& pose) {
-    std::array<WheelModuleState, NUM_WHEELS> states;
+    std::array<WheelModuleState, SwerveConstants::NUM_WHEELS> states;
 
     Vector2D velocity = chassisState.velocity;
 
@@ -20,7 +20,7 @@ SwerveDriveKinematics::toWheelStates(const ChassisState& chassisState, const Pos
     printf("Chassis: vel=(%.2f, %.2f) omega=%.2f rad/s\n",
        chassisState.velocity.x, chassisState.velocity.y, chassisState.omega);
 
-    for (int i = 0; i < NUM_WHEELS; ++i) {
+    for (int i = 0; i < SwerveConstants::NUM_WHEELS; ++i) {
         Vector2D v_rot(
             -chassisState.omega * wheelOffsets[i].y,
              chassisState.omega * wheelOffsets[i].x
@@ -34,17 +34,17 @@ SwerveDriveKinematics::toWheelStates(const ChassisState& chassisState, const Pos
             i, v_rot.x, v_rot.y, v_total.x, v_total.y);
     }
 
-    normalizeWheelSpeeds(states, MAX_SPEED);
+    normalizeWheelSpeeds(states, SwerveConstants::MAX_WHEEL_SPEED_MPS);
     return states;
 }
 
 ChassisState SwerveDriveKinematics::toChassisState(
-    const std::array<WheelModuleState, NUM_WHEELS>& wheelStates
+    const std::array<WheelModuleState, SwerveConstants::NUM_WHEELS>& wheelStates
 ) {
     Vector2D avgVelocity(0,0);
     double avgOmega = 0.0;
 
-    for (int i = 0; i < NUM_WHEELS; ++i) {
+    for (int i = 0; i < SwerveConstants::NUM_WHEELS; ++i) {
         Vector2D v(
             std::cos(wheelStates[i].angle) * wheelStates[i].speed,
             std::sin(wheelStates[i].angle) * wheelStates[i].speed
@@ -56,17 +56,17 @@ ChassisState SwerveDriveKinematics::toChassisState(
                     (wheelOffsets[i].x*wheelOffsets[i].x + wheelOffsets[i].y*wheelOffsets[i].y);
     }
 
-    avgVelocity = avgVelocity * (1.0 / NUM_WHEELS);
-    avgOmega /= NUM_WHEELS;
+    avgVelocity = avgVelocity * (1.0 / SwerveConstants::NUM_WHEELS);
+    avgOmega /= SwerveConstants::NUM_WHEELS;
 
     return ChassisState(avgVelocity, avgOmega);
 }
 
 void SwerveDriveKinematics::normalizeWheelSpeeds(
-    std::array<WheelModuleState, NUM_WHEELS>& states, double maxSpeed
+    std::array<WheelModuleState, SwerveConstants::NUM_WHEELS>& states, double maxSpeed
 ) {
     double higherSpeed = 0.0;
-    for (int i = 0; i < NUM_WHEELS; i++) {
+    for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         if (states[i].speed > higherSpeed) {
             higherSpeed = states[i].speed;
         }
@@ -74,7 +74,7 @@ void SwerveDriveKinematics::normalizeWheelSpeeds(
 
     if (higherSpeed > maxSpeed) {
         double scaleFactor = maxSpeed / higherSpeed;
-        for (int i = 0; i < NUM_WHEELS; i++) {
+        for (int i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
             states[i].speed *= scaleFactor;
         }
     }

@@ -1,60 +1,68 @@
 #pragma once
 // -----------------------------------------------------------------------------
-// Odometry project
+// Odometry project - constants grouped by purpose
 // -----------------------------------------------------------------------------
 /*
- * constants.h
- * CopyOdometry - constants grouped by purpose
- * Author: Pleun-Smit
+ * Constants.h
+ * CopyOdometry - centralized robot-wide constants
+ * Author: Pleun-Smit (refactor)
  */
 
+#include <array>
+#include <cstddef>
+#include <utility> // for std::pair
+
 namespace OperatorConstants {
-// *** BUILD / FEATURES ***
 
-// *** UNITS & CONVERSIONS ***
-
-// *** CONSTANTS ***
-static constexpr double PI = 3.14159265358979323846;
-
-// *** ROBOT GEOMETRY (METERS) ***
-double wheelRadius = ;
-double gearRatio = ;
-const std::size_t numberOfModules = 4; 
-
-// *** WHEEL / DRIVE PARAMETERS ***
-
-// *** ENCODER / SENSOR SPECS ***
-
-// *** IMU ***
-
-// *** ODOMETRY ***
-
-// *** KINEMATICS ***
-
-// *** CONTROL GAINS ***
-
-// *** MOTION LIMITS ***
-
-// *** ***
-
-
+// Controller port
 inline constexpr int kDriverControllerPort = 0;
 
-    
+// Joystick mapping & filters (units: axis indices, deadband fraction)
+inline constexpr int JOYSTICK_AXIS_FWD = 1;   // forward/back axis
+inline constexpr int JOYSTICK_AXIS_STR = 0;   // strafe axis
+inline constexpr int JOYSTICK_AXIS_ROT = 4;   // rotation axis
+inline constexpr double JOYSTICK_DEADBAND = 0.05;
 
-    constexpr double TRACK_WIDTH = 0.515;
-    constexpr double WHEEL_BASE  = 0.515;
+// Units & conversions
+inline constexpr double PI = 3.14159265358979323846;
 
-    // Max speeds
-    constexpr double MAX_SPEED = 0.5; // m/s (same as Java's limit for safety)
+// Speed limits (tunable)
+// Units: m/s for linear, rad/s for angular
+inline constexpr double MAX_FORWARD_SPEED_MPS = 0.5;  // m/s
+inline constexpr double MAX_SIDE_SPEED_MPS    = 0.5;  // m/s
+inline constexpr double MAX_ANGULAR_SPEED_RPS = 6.28; // rad/s (~1 rev/s)
 
-    // Steer offsets (from the working Java code)
-    constexpr double FRONT_LEFT_OFFSET  = M_PI;
-    constexpr double FRONT_RIGHT_OFFSET = 0.0;
-    constexpr double BACK_LEFT_OFFSET   = M_PI;
-    constexpr double BACK_RIGHT_OFFSET  = 0.0;
+// Safety / drive input deadband
+inline constexpr double DRIVE_DEADBAND = 0.2;
 
-    constexpr double DRIVE_DEADBAND = 0.2;
-    constexpr double STEER_MOTOR_KP = 0.25;
+} // namespace OperatorConstants
 
-}  // namespace OperatorConstants
+
+namespace SwerveConstants {
+
+// Number of modules/wheels
+inline constexpr std::size_t NUMBER_OF_MODULES = 4;
+inline constexpr std::size_t NUM_WHEELS = NUMBER_OF_MODULES; // alias for existing code
+
+// Physical module parameters (units: meters, ratios)
+inline constexpr double WHEEL_RADIUS_M   = 0.0375; // wheel radius in meters
+inline constexpr double DRIVE_GEAR_RATIO = 5.50;   // motor->wheel gear ratio
+
+// Module PID / control gains
+inline constexpr double kP_STEER = 0.25; // proportional gain for steering
+
+// Steering offsets (radians) - keep if needed for absolute encoders
+inline constexpr double FRONT_LEFT_OFFSET  = PI;
+inline constexpr double FRONT_RIGHT_OFFSET = 0.0;
+inline constexpr double BACK_LEFT_OFFSET   = PI;
+inline constexpr double BACK_RIGHT_OFFSET  = 0.0;
+
+inline constexpr double MAX_WHEEL_SPEED_MPS = 3.0;
+
+} // namespace SwerveConstants
+
+
+namespace PIDGains{
+    // steer gains
+    double STEER_kP = 0.25;
+}

@@ -2,6 +2,7 @@
 #include "WheelModuleState.h"
 #include "Math/Vector2D.h"
 #include "Math/MathUtils.h"
+#include "Constants.h"
 
 #include <rev/SparkMax.h>
 #include <rev/RelativeEncoder.h>
@@ -10,10 +11,9 @@
 #include <cmath>
 #include <cstdio>
 
+
 class SwerveModule {
 public:
-    static constexpr double PI = 3.14159265358979323846;
-    static constexpr double MAX_SPEED = 3.0; // m/s
 
     SwerveModule(int driveID, int steerID, Vector2D wheelOffset, double wheelRadius, double gearRatio = 1.0, double steerOffset = 0.0);
 
