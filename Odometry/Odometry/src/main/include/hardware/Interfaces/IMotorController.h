@@ -1,3 +1,5 @@
+#pragma once
+
 class IMotorController {
 public:
     virtual void Set(double value) = 0; // -1.0 to 1.0 power control

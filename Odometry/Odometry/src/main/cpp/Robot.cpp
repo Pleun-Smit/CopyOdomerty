@@ -2,6 +2,24 @@
 #include <frc/MathUtil.h>
 #include <cstdio>
 #include "math/MathUtils.h"
+#include "hardware/SparkFlexMotorController.h"
+#include "hardware/SparkMaxMotorController.h"
+
+enum class MotorType {Max, Flex};
+
+struct MotorConfig {
+    int driveID;
+    MotorType driveType;
+    int steerID;
+    MotorType steerType;
+};
+
+const MotorConfig swerveMotorConfigs[4] = {
+    {10, MotorType::Flex,  11, MotorType::Max},   // front-left
+    {16, MotorType::Flex, 17, MotorType::Max},  // front-right
+    {12, MotorType::Flex,  13, MotorType::Max},   // back-left
+    {14, MotorType::Flex, 15, MotorType::Max},  // back-right
+};
 
 Robot::Robot() 
     : kinematics(nullptr), odometry(nullptr) 
@@ -13,6 +31,7 @@ Robot::~Robot() {}
 
 void Robot::RobotInit() {
     // Define wheel offsets first
+    printf("RobotInit begin\n"); fflush(stdout);
     std::array<Vector2D, SwerveConstants::NUM_WHEELS> wheelOffsets = {
         Vector2D(0.2575,  0.2575),   // front-left
         Vector2D(0.2575, -0.2575),   // front-right
@@ -20,34 +39,59 @@ void Robot::RobotInit() {
         Vector2D(-0.2575, -0.2575)   // back-right
     };
 
-    // Create swerve modules
-    modules = {
-        std::make_unique<SwerveModule>(10, 11, wheelOffsets[0], 0.0375, 5.50, 0.0),
-        std::make_unique<SwerveModule>(16, 17, wheelOffsets[1], 0.0375, 5.50, 0.0),
-        std::make_unique<SwerveModule>(12, 13, wheelOffsets[2], 0.0375, 5.50, 0.0),
-        std::make_unique<SwerveModule>(14, 15, wheelOffsets[3], 0.0375, 5.50, 0.0)
-    };
+    printf("building modules\n"); fflush(stdout);
+    // Build your swerve modules with the new polymorphic controllers
+    for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; ++i) {
+        const auto& cfg = swerveMotorConfigs[i];
+
+        std::unique_ptr<IMotorController> driveMotor;
+        std::unique_ptr<IMotorController> steerMotor;
+
+        // Create drive motor
+        if (cfg.driveType == MotorType::Max)
+            driveMotor = std::make_unique<SparkMaxMotorController>(cfg.driveID, rev::spark::SparkMax::MotorType::kBrushless);
+        else
+            driveMotor = std::make_unique<SparkFlexMotorController>(cfg.driveID, rev::spark::SparkFlex::MotorType::kBrushless);
+
+        // Create steer motor
+        if (cfg.steerType == MotorType::Max)
+            steerMotor = std::make_unique<SparkMaxMotorController>(cfg.steerID, rev::spark::SparkMax::MotorType::kBrushless);
+        else
+            steerMotor = std::make_unique<SparkFlexMotorController>(cfg.steerID, rev::spark::SparkFlex::MotorType::kBrushless);
+
+        modules[i] = std::make_unique<SwerveModule>(
+            std::move(driveMotor), std::move(steerMotor),
+            wheelOffsets[i], 0.0375, 5.50, 0.0);
+    }
+    printf("Modules build\n"); fflush(stdout);
 
     // Initialize kinematics
     kinematics = std::make_unique<SwerveDriveKinematics>(wheelOffsets);
     kinematics->toggleFieldRelativeControl(false);
+    printf("Kinematics initialized\n"); fflush(stdout);
 
-    // Initialize odometry
-    //odometry = std::make_unique<Odometry>(modules, &gyro);
-    odometry = std::make_unique<Odometry>(std::move(modules), std::make_unique<GyroSensor>());
-    odometry->resetPose(0,0,0);
+    
 
     // Reset drive encoders only
     for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         modules[i]->reset();
     }
-
-    gyro.reset();
-
-    // Print initial absolute angles
+    printf("Reset drive encoders\n"); fflush(stdout);
+    
+        // Print initial absolute angles
     for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         printf("Wheel %zu initial absolute angle=%.3f rad\n", i, modules[i]->getSteerAngle());
     }
+
+    // Initialize odometry
+    //odometry = std::make_unique<Odometry>(modules, &gyro);
+    odometry = std::make_unique<Odometry>(std::move(modules), std::make_unique<GyroSensor>());
+    odometry->resetPose(0,0,0);
+    printf("Odometry initialized\n"); fflush(stdout);
+
+    gyro.reset();
+
+
 
     printf("RobotInit complete.\n");
 }
