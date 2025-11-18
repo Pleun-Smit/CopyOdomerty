@@ -49,7 +49,7 @@ class Robot : public frc::TimedRobot {
   std::optional<frc2::CommandPtr> m_autonomousCommand;
   frc::Joystick joystick{0};
 
-  std::array<std::unique_ptr<SwerveModule>, SwerveConstants::NUM_WHEELS> modules;
+  std::array<std::shared_ptr<SwerveModule>, SwerveConstants::NUM_WHEELS> modules;
   std::unique_ptr<SwerveDriveKinematics> kinematics;
   Pose pose;
   GyroSensor gyro;

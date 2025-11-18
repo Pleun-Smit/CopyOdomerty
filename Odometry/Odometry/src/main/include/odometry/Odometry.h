@@ -9,15 +9,24 @@
 
 class Odometry : public Module {
 public:
-    Odometry(std::array<std::unique_ptr<SwerveModule>, SwerveConstants::NUMBER_OF_MODULES> modules_, std::unique_ptr<IGyroSensor> gyro_);
+    Odometry(
+        const std::array<std::shared_ptr<SwerveModule>, SwerveConstants::NUMBER_OF_MODULES>& modules_,
+        std::unique_ptr<IGyroSensor> gyro_
+    );
+
     void update() override;
     Pose getPose() const;
     void resetPose(double x, double y, double heading);
 
 private:
-    std::array<std::unique_ptr<SwerveModule>, SwerveConstants::NUMBER_OF_MODULES> modules;
+    // Store shared_ptrs here, not unique_ptrs
+    std::array<std::shared_ptr<SwerveModule>, SwerveConstants::NUMBER_OF_MODULES> modules;
+
+    // Gyro is uniquely owned by Odometry
     std::unique_ptr<IGyroSensor> gyro;
+
     Pose pose;
+
     double lastDistances[SwerveConstants::NUMBER_OF_MODULES];
     double lastHeading;
 };

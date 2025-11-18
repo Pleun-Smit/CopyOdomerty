@@ -59,7 +59,7 @@ void Robot::RobotInit() {
         else
             steerMotor = std::make_unique<SparkFlexMotorController>(cfg.steerID, rev::spark::SparkFlex::MotorType::kBrushless);
 
-        modules[i] = std::make_unique<SwerveModule>(
+        modules[i] = std::make_shared<SwerveModule>(
             std::move(driveMotor), std::move(steerMotor),
             wheelOffsets[i], 0.0375, 5.50, 0.0);
     }
@@ -77,7 +77,7 @@ void Robot::RobotInit() {
         modules[i]->reset();
     }
     printf("Reset drive encoders\n"); fflush(stdout);
-    
+
         // Print initial absolute angles
     for (size_t i = 0; i < SwerveConstants::NUM_WHEELS; i++) {
         printf("Wheel %zu initial absolute angle=%.3f rad\n", i, modules[i]->getSteerAngle());
@@ -85,7 +85,8 @@ void Robot::RobotInit() {
 
     // Initialize odometry
     //odometry = std::make_unique<Odometry>(modules, &gyro);
-    odometry = std::make_unique<Odometry>(std::move(modules), std::make_unique<GyroSensor>());
+    // odometry = std::make_unique<Odometry>(std::move(modules), std::make_unique<GyroSensor>());
+    odometry = std::make_unique<Odometry>(modules, std::make_unique<GyroSensor>());
     odometry->resetPose(0,0,0);
     printf("Odometry initialized\n"); fflush(stdout);
 

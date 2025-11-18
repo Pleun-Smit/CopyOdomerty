@@ -3,13 +3,19 @@
 #include <cmath>
 #include <cstdio>
 
-Odometry::Odometry(std::array<std::unique_ptr<SwerveModule>, SwerveConstants::NUMBER_OF_MODULES> modules_, std::unique_ptr<IGyroSensor> gyro_)
-    : modules(std::move(modules_)), gyro(std::move(gyro_)), pose() 
+Odometry::Odometry(
+    const std::array<std::shared_ptr<SwerveModule>, SwerveConstants::NUMBER_OF_MODULES>& modules_,
+    std::unique_ptr<IGyroSensor> gyro_
+)
+    : modules(modules_),               // <-- copies shared_ptr (increments refcount)
+      gyro(std::move(gyro_)),          // <-- transfer ownership
+      pose()
 {
     // Record initial distances
     for (size_t i = 0; i < SwerveConstants::NUMBER_OF_MODULES; i++) {
         lastDistances[i] = modules[i]->getDriveDistance();
     }
+
     lastHeading = gyro->getHeading();
 }
 
